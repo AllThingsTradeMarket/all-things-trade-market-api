@@ -1,5 +1,3 @@
-import express from 'express';
-import usersRouter from './routes/users';
 import { createApp } from './utils/helpers/createApp';
 
 const app = createApp();
