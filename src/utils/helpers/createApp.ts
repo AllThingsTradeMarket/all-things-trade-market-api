@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import usersRouter from '../../routes/users';
+import usersRouter from '../../routes/users.routes';
 
 export function createApp() {
   const app = express();
