@@ -3,6 +3,7 @@ import { AuthUserDto, CreateUserDto } from '../dtos/user.dtos';
 import { User } from '../models/user.model';
 import { db } from '../db/knex';
 import { comparePassword, getHashedPassword } from '../utils/helpers/userHelpers/user.helpers';
+import { getWrappedApiResponse } from '../utils/helpers/api.helpers';
 
 const DB_NAME = 'users'
 
@@ -31,7 +32,7 @@ export const createUser = async (request: Request<{}, {}, CreateUserDto>, respon
     try {
         const hashedPassword = getHashedPassword(request.body.password);
         const result = await db(DB_NAME).insert({...request.body, password: hashedPassword});
-        response.status(201).json({id: result[0]});
+        response.status(201).json(getWrappedApiResponse({id: result[0]}));
     } catch(error: unknown) {
         if (error instanceof Error) {
             console.log(error.message);
@@ -44,9 +45,9 @@ export const authUser = async (request: Request<{}, {}, AuthUserDto>, response: 
     try {
         const user = (await usersDb).find(user => user.email === request.body.email);
         if (user && comparePassword(request.body.password, user.password)) {
-            return response.status(201).json({id: user.id});
+            return response.status(201).json(getWrappedApiResponse({id: user.id, username: user.username}));
         }
-        response.status(404).json({message: 'Użytkownik z takimi danimi nie został znaleziony'})
+        response.status(404).json({message: 'User with such data not found'})
     } catch(error: unknown) {
         if (error instanceof Error) {
             console.log(error.message);
