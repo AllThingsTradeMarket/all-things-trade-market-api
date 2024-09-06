@@ -1,4 +1,6 @@
 import {z} from 'zod';
+import { db } from '../db/knex';
+import { databaseNames } from '../utils/constants/database_names';
 
 const ImageAsignmentSchema = z.object({
     id: z.string(),
@@ -7,3 +9,4 @@ const ImageAsignmentSchema = z.object({
 });
 
 export type ImageAssignment = z.infer<typeof ImageAsignmentSchema>;
+export const imageAssignmentsDb = db<ImageAssignment>(databaseNames.IMAGE_ASSIGNMENTS);

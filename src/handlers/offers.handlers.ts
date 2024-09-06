@@ -1,20 +1,23 @@
 import { Request, Response } from 'express-serve-static-core';
 import { db } from '../db/knex';
-import { Offer } from '../models/offer.model';
+import { Offer, offersDb } from '../models/offer.model';
 import { CreateOfferDto } from '../dtos/offer.dtos';
 import _ from 'lodash';
 import { IMAGES_BASE_PATH } from '../utils/constants/constants';
 import { imageUploadMiddleware } from '../middleware/images-upload.middleware';
-import { Image } from '../models/image.model';
+import { Image, imagesDb } from '../models/image.model';
 import { createImageAssignments } from './images_assignments.handlers';
+import { formatDateToDDMMYYYY } from '../utils/helpers/helpers';
+import { ImageAssignment } from '../models/images_assignments.model';
 
-const DB_NAME = 'offers'
-
-const offersDb = db<Offer>(DB_NAME);
-const imagesDb = db<Image>('images');
 
 export const getOffers = async (request: Request, response: Response<Offer[]>) => {
-    const offers = await offersDb.select('*');
+    const offers = await offersDb.select('');
+    response.send(offers);
+};
+
+export const getUserOffers = async (request: Request<{}, {}, {userId: string}>, response: Response<Offer[]>) => {
+    const offers = await offersDb.where('userId', request.body.userId);
     response.send(offers);
 };
 
@@ -37,20 +40,30 @@ export const createOffer = async (request: Request<{}, {}, CreateOfferDto>, resp
     try {
         const uploadedFiles = request.files as Express.Multer.File[];
         let imageIds: (number | undefined)[] = [];
+        
         if (!_.isEmpty(uploadedFiles)) {
             imageIds = await Promise.all(
                 uploadedFiles.map(async (file) => {
                     const imagePath = `${IMAGES_BASE_PATH}/${file.filename}`;
-                    const result = await imagesDb.insert({ path: imagePath }).first();
-                    return result;
+                    const result = await imagesDb.insert({ path: imagePath });
+                    return result[0];
                 })
             );
         }
-        const offerId = await db(DB_NAME).insert(request.body).first();
+
+        const { userId, title, description } = request.body;
+
+        const offerResponse = await offersDb.insert({
+            dateCreated: formatDateToDDMMYYYY(new Date()),
+            userId: userId,
+            title: title,
+            description: description,
+        });
+        const offerId = offerResponse[0];
         if (offerId && !imageIds.some(id => typeof id === 'undefined')) {
             await createImageAssignments({
                 offerId: offerId.toString(),
-                imagesIds: imageIds.map(id => id!.toString())
+                imagesIds: imageIds.map(id => id!.toString()),
             });
         }
         response.status(201).json({id: offerId});

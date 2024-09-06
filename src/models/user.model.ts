@@ -1,4 +1,6 @@
 import {z} from 'zod';
+import { db } from '../db/knex';
+import { databaseNames } from '../utils/constants/database_names';
 
 const UserSchema = z.object({
     username: z.string(),
@@ -10,3 +12,4 @@ const UserSchema = z.object({
 });
 
 export type User = z.infer<typeof UserSchema>;
+export const usersDb = db<User>(databaseNames.USERS);

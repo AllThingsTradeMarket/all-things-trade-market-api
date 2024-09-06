@@ -1,12 +1,7 @@
 import { Request, Response } from 'express-serve-static-core';
 import { AuthUserDto, CreateUserDto } from '../dtos/user.dtos';
-import { User } from '../models/user.model';
-import { db } from '../db/knex';
+import { User, usersDb } from '../models/user.model';
 import { comparePassword, getHashedPassword } from '../utils/helpers/userHelpers/user.helpers';
-
-const DB_NAME = 'users'
-
-const usersDb = db<User>(DB_NAME);
 
 export const getUsers = (request: Request, response: Response) => {
 
