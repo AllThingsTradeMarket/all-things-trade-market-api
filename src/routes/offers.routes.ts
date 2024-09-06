@@ -1,11 +1,12 @@
 import { Router } from 'express'
+import { createOffer, getOfferById, getOffers } from '../handlers/offers.handlers';
 
 const offersRouter = Router();
 
-offersRouter.get('/', );
+offersRouter.get('/', getOffers);
 
-offersRouter.get('/:id', );
+offersRouter.get('/:id', getOfferById);
 
-offersRouter.post('/', );
+offersRouter.post('/', createOffer);
 
 export default offersRouter;
