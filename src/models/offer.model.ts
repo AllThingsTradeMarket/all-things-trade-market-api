@@ -6,7 +6,7 @@ const OfferSchema = z.object({
     title: z.string(),
     description: z.string(),
     images: z.array(z.string()),
-    creationDate: z.date()
+    dateCreated: z.date()
 });
 
 export type Offer = z.infer<typeof OfferSchema>;
