@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { createOffer, getOfferById, getOffers } from '../handlers/offers.hadnlers';
+import { createOffer, getOfferById, getOffers } from '../handlers/offers.handlers';
 
 const offersRouter = Router();
 
