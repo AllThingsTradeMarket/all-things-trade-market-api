@@ -9,3 +9,9 @@ export function formatDateToDDMMYYYY(date: Date) {
 
     return `${day}-${month}-${year}`;
 }
+
+export const asyncFor = async <T>(array: T[], asyncCallback: (item: T) => Promise<T>) => {
+    for (let item of array) {
+        await asyncCallback(item);
+    }
+};

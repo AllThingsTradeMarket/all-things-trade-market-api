@@ -12,4 +12,4 @@ const OfferSchema = z.object({
 });
 
 export type Offer = z.infer<typeof OfferSchema>;
-export const offersDb = db<Offer>(databaseNames.OFFERS);
+export const offersDb = () => db<Offer>(databaseNames.OFFERS);

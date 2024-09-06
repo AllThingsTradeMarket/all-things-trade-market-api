@@ -1,30 +1,36 @@
 import { Request, Response } from 'express-serve-static-core';
-import { db } from '../db/knex';
 import { Offer, offersDb } from '../models/offer.model';
 import { CreateOfferDto } from '../dtos/offer.dtos';
-import _ from 'lodash';
+import { isEmpty } from 'lodash';
 import { IMAGES_BASE_PATH } from '../utils/constants/constants';
-import { imageUploadMiddleware } from '../middleware/images-upload.middleware';
-import { Image, imagesDb } from '../models/image.model';
+import { imagesDb } from '../models/image.model';
 import { createImageAssignments } from './images_assignments.handlers';
-import { formatDateToDDMMYYYY } from '../utils/helpers/helpers';
-import { ImageAssignment } from '../models/images_assignments.model';
+import { ImageAssignment, imageAssignmentsDb } from '../models/images_assignments.model';
+import { getOfferImagesPaths, insertOfferToDb } from '../utils/helpers/offerHelpers/offer.helpers';
 
 
 export const getOffers = async (request: Request, response: Response<Offer[]>) => {
-    const offers = await offersDb.select('');
+    const offers = await offersDb().select('');
     response.send(offers);
 };
 
-export const getUserOffers = async (request: Request<{}, {}, {userId: string}>, response: Response<Offer[]>) => {
-    const offers = await offersDb.where('userId', request.body.userId);
+export const getUserOffers = async (request: Request<{userId: string}, {}, {}>, response: Response<Offer[] | string>) => {
+    const offers = await offersDb().where('userId', request.params.userId);
+    if (isEmpty(offers)) {
+        return response.status(404).send('No offers found for this user');
+    }
+
+    for (let offer of offers) {
+        offer.images = await getOfferImagesPaths(offer.id);
+    }
+    
     response.send(offers);
 };
 
 export const getOfferById = async (request: Request<{id: string}>, response: Response<Offer>) => {
     try {
         const id = request.params.id;
-        const offer = await offersDb
+        const offer = await offersDb()
             .where('id', id)
             .first();
 
@@ -41,27 +47,19 @@ export const createOffer = async (request: Request<{}, {}, CreateOfferDto>, resp
         const uploadedFiles = request.files as Express.Multer.File[];
         let imageIds: (number | undefined)[] = [];
         
-        if (!_.isEmpty(uploadedFiles)) {
-            imageIds = await Promise.all(
-                uploadedFiles.map(async (file) => {
-                    const imagePath = `${IMAGES_BASE_PATH}/${file.filename}`;
-                    const result = await imagesDb.insert({ path: imagePath });
-                    return result[0];
-                })
-            );
+        if (!isEmpty(uploadedFiles)) {
+            for (let file of uploadedFiles) {
+                const imagePath = `${IMAGES_BASE_PATH}/${file.filename}`;
+                const result = await imagesDb().insert({ path: imagePath });
+                imageIds.push(result[0]);
+            }
         }
 
         const { userId, title, description } = request.body;
 
-        const offerResponse = await offersDb.insert({
-            dateCreated: formatDateToDDMMYYYY(new Date()),
-            userId: userId,
-            title: title,
-            description: description,
-        });
-        const offerId = offerResponse[0];
+        const offerId = await insertOfferToDb(userId, title, description);
         if (offerId && !imageIds.some(id => typeof id === 'undefined')) {
-            await createImageAssignments({
+            createImageAssignments({
                 offerId: offerId.toString(),
                 imagesIds: imageIds.map(id => id!.toString()),
             });

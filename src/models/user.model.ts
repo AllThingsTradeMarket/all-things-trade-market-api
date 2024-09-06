@@ -12,4 +12,4 @@ const UserSchema = z.object({
 });
 
 export type User = z.infer<typeof UserSchema>;
-export const usersDb = db<User>(databaseNames.USERS);
+export const usersDb = () => db<User>(databaseNames.USERS);

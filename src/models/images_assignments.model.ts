@@ -9,4 +9,4 @@ const ImageAsignmentSchema = z.object({
 });
 
 export type ImageAssignment = z.infer<typeof ImageAsignmentSchema>;
-export const imageAssignmentsDb = db<ImageAssignment>(databaseNames.IMAGE_ASSIGNMENTS);
+export const imageAssignmentsDb = () => db<ImageAssignment>(databaseNames.IMAGE_ASSIGNMENTS);

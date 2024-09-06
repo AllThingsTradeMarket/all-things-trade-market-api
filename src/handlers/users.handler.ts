@@ -10,7 +10,7 @@ export const getUsers = (request: Request, response: Response) => {
 export const getUserById = async (request: Request<{id: string}>, response: Response<User>) => {
     try {
         const id = request.params.id;
-        const user = await usersDb
+        const user = await usersDb()
             .where('id', id)
             .first();
 
@@ -25,7 +25,7 @@ export const getUserById = async (request: Request<{id: string}>, response: Resp
 export const createUser = async (request: Request<{}, {}, CreateUserDto>, response: Response) => {
     try {
         const hashedPassword = getHashedPassword(request.body.password);
-        const result = await usersDb.insert({...request.body, password: hashedPassword});
+        const result = await usersDb().insert({...request.body, password: hashedPassword});
         response.status(201).json({id: result[0]});
     } catch(error: unknown) {
         if (error instanceof Error) {
@@ -37,7 +37,7 @@ export const createUser = async (request: Request<{}, {}, CreateUserDto>, respon
 
 export const authUser = async (request: Request<{}, {}, AuthUserDto>, response: Response) => {
     try {
-        const user = (await usersDb).find(user => user.email === request.body.email);
+        const user = (await usersDb()).find(user => user.email === request.body.email);
         if (user && comparePassword(request.body.password, user.password)) {
             return response.status(201).json({id: user.id, username: user.username});
         }

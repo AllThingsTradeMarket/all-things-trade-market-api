@@ -8,4 +8,4 @@ const ImageSchema = z.object({
 });
 
 export type Image = z.infer<typeof ImageSchema>;
-export const imagesDb = db<Image>(databaseNames.IMAGES);
+export const imagesDb = () => db<Image>(databaseNames.IMAGES);
