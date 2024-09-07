@@ -1,4 +1,4 @@
-import { createApp } from './utils/helpers/createApp';
+import { createApp } from './utils/helpers/create_app';
 
 const app = createApp();
 

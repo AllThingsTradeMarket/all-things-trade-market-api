@@ -2,7 +2,7 @@ import {z} from 'zod';
 import { databaseNames } from '../utils/constants/database_names';
 import { db } from '../db/knex';
 
-const OfferSchema = z.object({
+export const OfferSchema = z.object({
     id: z.string(),
     userId: z.string(),
     title: z.string(),

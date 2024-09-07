@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import usersRouter from '../../routes/users.routes';
 import offersRouter from '../../routes/offers.routes';
-import imagesRouter from '../../routes/images.routes';
+import exchangeOffersRouter from '../../routes/exchange_offer.routes';
 
 export function createApp() {
   const app = express();
@@ -12,7 +12,7 @@ export function createApp() {
   app.use('/resources', express.static('resources'));
   app.use('/api/users', usersRouter);
   app.use('/api/offers', offersRouter);
-  app.use('/api/images', imagesRouter);
+  app.use('/api/exchange_offers', exchangeOffersRouter);
 
   return app;
 }
