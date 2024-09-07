@@ -4,6 +4,7 @@ import { imagesDb } from "../../../models/image.model";
 import { Offer, offersDb } from "../../../models/offer.model";
 import { formatDateToDDMMYYYY } from "../helpers";
 import { OfferSearchParams } from "../../../types/offers.types";
+import { CreateOfferDto } from "../../../dtos/offer.dtos";
 
 export const getOfferImagesPaths = async (offerId: string) => {
     const imageAssignments = await imageAssignmentsDb().where('offerId', offerId);
@@ -20,14 +21,15 @@ export const getOfferImagesPaths = async (offerId: string) => {
     return offerImages.map(image => image.path);
 };
 
-export const insertOfferToDb = async (userId: string, title: string, description: string) => {
+export const insertOfferToDb = async (offer: CreateOfferDto) => {
     const result = await offersDb().insert({
         dateCreated: formatDateToDDMMYYYY(new Date()),
-        userId: userId,
-        title: title,
-        description: description,
+        userId: offer.userId,
+        title: offer.title,
+        description: offer.description,
+        price: offer.price
     });
-    return result[0];
+    return result[0]; // id of created offer
 };
 
 export const addImagesToOffers = async (offers: Offer[]) => {
