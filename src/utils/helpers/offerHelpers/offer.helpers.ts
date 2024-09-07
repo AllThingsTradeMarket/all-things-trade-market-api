@@ -41,10 +41,13 @@ export const addImagesToOffers = async (offers: Offer[]) => {
 export const findOfferByParams = async (params: OfferSearchParams) => {
     return offersDb()
         // '?' at the end prevents SQL injection, it changes that to value of the second argument 
-        .whereRaw('LOWER(title) LIKE ?', [`%${getParamsTitle(params.title)}%`])
+        .whereRaw('LOWER(title) LIKE ?', [`%${getParamsTitle(params.title ? params.title : '')}%`])
         .modify(queryBuilder => {
             if (params.userId) {
                 queryBuilder.andWhere('userId', params.userId);
+            }
+            if (params.id) {
+                queryBuilder.andWhere('id', params.id);
             }
         });
 };
