@@ -47,9 +47,7 @@ export const createOffer = async (request: Request<{}, {}, CreateOfferDto>, resp
             }
         }
 
-        const { userId, title, description } = request.body;
-
-        const offerId = await insertOfferToDb(userId, title, description);
+        const offerId = await insertOfferToDb(request.body);
         if (offerId && !imageIds.some(id => typeof id === 'undefined')) {
             createImageAssignments({
                 offerId: offerId.toString(),
