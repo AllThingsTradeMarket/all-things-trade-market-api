@@ -1,9 +1,9 @@
 import { isEmpty } from "lodash";
 import { imageAssignmentsDb } from "../../../models/images_assignments.model";
 import { imagesDb } from "../../../models/image.model";
-import { offersDb } from "../../../models/offer.model";
+import { Offer, offersDb } from "../../../models/offer.model";
 import { formatDateToDDMMYYYY } from "../helpers";
-import { createImageAssignments } from "../../../handlers/images_assignments.handlers";
+import { OfferSearchParams } from "../../../types/offers.types";
 
 export const getOfferImagesPaths = async (offerId: string) => {
     const imageAssignments = await imageAssignmentsDb().where('offerId', offerId);
@@ -28,4 +28,24 @@ export const insertOfferToDb = async (userId: string, title: string, description
         description: description,
     });
     return result[0];
+};
+
+export const addImagesToOffers = async (offers: Offer[]) => {
+    for (let offer of offers) {
+        offer.images = await getOfferImagesPaths(offer.id);
+    }
 }
+
+export const findOfferByParams = async (params: OfferSearchParams) => {
+    console.log(params);
+    return offersDb()
+        // '?' at the end prevents SQL injection, it changes that to value of the second argument 
+        .whereRaw('LOWER(title) LIKE ?', [`%${getParamsTitle(params.title)}%`])
+        .modify(queryBuilder => {
+            if (params.userId) {
+                queryBuilder.andWhere('userId', params.userId);
+            }
+        });
+};
+
+const getParamsTitle = (title: string | undefined) => title ? title.toLowerCase() : '';
