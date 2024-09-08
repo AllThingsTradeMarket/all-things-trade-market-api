@@ -14,5 +14,7 @@ export type AuthUserDto = {
 export type GetUserDto = {
     username: string;
     email: string;
-    id: string;
+    firstName: string;
+    lastName: string;
+    id: number;
 }

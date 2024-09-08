@@ -1,20 +1,27 @@
 import { Request, Response } from 'express-serve-static-core';
-import { AuthUserDto, CreateUserDto } from '../dtos/user.dtos';
+import { AuthUserDto, CreateUserDto, GetUserDto } from '../dtos/user.dtos';
 import { User, usersDb } from '../models/user.model';
-import { comparePassword, getHashedPassword } from '../utils/helpers/userHelpers/user.helpers';
+import { comparePassword, findUsersByParams, getHashedPassword, mapToGetUserDto } from '../utils/helpers/userHelpers/user.helpers';
+import { UserSearchParams } from '../types/users.types';
 
-export const getUsers = (request: Request, response: Response) => {
-
+export const getUsers = async (request: Request<{}, {}, {}, UserSearchParams>, response: Response<GetUserDto[]>) => {
+    try {
+        const users = await findUsersByParams(request.query);
+        console.log(users);
+        response.status(200).json(users.map(user => mapToGetUserDto(user)));
+    } catch (error) {
+        console.error(error);        
+    }
 };
 
-export const getUserById = async (request: Request<{id: string}>, response: Response<User>) => {
+export const getUserById = async (request: Request<{id: string}>, response: Response<GetUserDto>) => {
     try {
         const id = request.params.id;
         const user = await usersDb()
             .where('id', id)
             .first();
 
-        response.send(user ? user : undefined);
+        response.send(user ? mapToGetUserDto(user) : undefined);
     } catch (error) {
         if (error instanceof Error) {
             console.error(`User with id: ${request.params.id} not found`);

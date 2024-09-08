@@ -1,8 +1,10 @@
+import { isEmpty } from "lodash";
 import { ExchangeOffer, exchangeOffersDb } from "../../../models/exchange_offer.model";
 import { exchangeOfferedProductsDb } from "../../../models/exchange_offered_products.model";
 import { exchangeRequestedProductsDb } from "../../../models/exchange_requested_products.model";
 import { Offer, offersDb } from "../../../models/offer.model";
 import { ExchangeOfferSearchParams } from "../../../types/exchange_offers.types";
+import { addImagesToOffers } from "../offerHelpers/offer.helpers";
 
 export const createExchangeOfferRequestedProducts = async (exchangeId: string, requestedProductsIds: string[]) => {
     for (let productId of requestedProductsIds) {
@@ -48,6 +50,9 @@ export const assignOfferedProductsData = async (exchangeOffers: ExchangeOffer[])
             .pluck('offerId');
         
         offeredProducts = await offersDb().whereIn('id', offeredProductsIds);
+        if (!isEmpty(offeredProducts)) {
+            await addImagesToOffers(offeredProducts);
+        }
         exchangeOffer.offeredProducts = offeredProducts ? offeredProducts : [];
     }
 }
@@ -60,6 +65,9 @@ export const assignRequestedProductsData = async (exchangeOffers: ExchangeOffer[
             .pluck('offerId');
 
         requestedProducts = await offersDb().whereIn('id', requestedProductsIds);
+        if (!isEmpty(requestedProducts)) {
+            await addImagesToOffers(requestedProducts);
+        }
         exchangeOffer.requestedProducts = requestedProducts ? requestedProducts : [];
     }
 }
