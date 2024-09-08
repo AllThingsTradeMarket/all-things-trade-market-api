@@ -1,4 +1,4 @@
 export type CreateImageAssignmentDto = {
-    offerId: string;
-    imagesIds: string[];
+    offerId: number;
+    imagesIds: number[];
 };

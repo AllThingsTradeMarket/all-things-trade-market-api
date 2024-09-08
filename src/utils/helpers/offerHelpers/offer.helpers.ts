@@ -6,12 +6,12 @@ import { formatDateToDDMMYYYY } from "../helpers";
 import { OfferSearchParams } from "../../../types/offers.types";
 import { CreateOfferDto } from "../../../dtos/offer.dtos";
 
-export const getOfferImagesPaths = async (offerId: string) => {
+const getOfferImagesPaths = async (offerId: string) => {
     const imageAssignments = await imageAssignmentsDb().where('offerId', offerId);
     if (isEmpty(imageAssignments)) {
         return [];
     }
-    
+
     const offerImages = [];
 
     for (let assignment of imageAssignments) {
@@ -31,6 +31,13 @@ export const insertOfferToDb = async (offer: CreateOfferDto) => {
     });
     return result[0]; // id of created offer
 };
+
+export const getOfferWithoutFiles = (offer: CreateOfferDto) => ({
+    userId: offer.userId,
+    title: offer.title,
+    description: offer.description,
+    price: offer.price
+})
 
 export const addImagesToOffers = async (offers: Offer[]) => {
     for (let offer of offers) {
@@ -53,3 +60,7 @@ export const findOfferByParams = async (params: OfferSearchParams) => {
 };
 
 const getParamsTitle = (title: string | undefined) => title ? title.toLowerCase() : '';
+
+export const generateUuid = () => {
+    return Math.random().toString() + Math.random().toString() + Math.random().toString();
+}

@@ -4,8 +4,8 @@ import { databaseNames } from '../utils/constants/database_names';
 
 const ImageAsignmentSchema = z.object({
     id: z.string(),
-    imageId: z.string(),
-    offerId: z.string()
+    imageId: z.number(),
+    offerId: z.number()
 });
 
 export type ImageAssignment = z.infer<typeof ImageAsignmentSchema>;
