@@ -1,5 +1,6 @@
 export const exchangeStatusses = {
     PENDING: 'pending',
     REJECTED: 'rejected',
-    ACCEPTED: 'accepted'
+    ACCEPTED: 'accepted',
+    CANCELED: 'canceled'
 } as const;

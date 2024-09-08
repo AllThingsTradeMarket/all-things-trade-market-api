@@ -1,6 +1,6 @@
 import { Request, Response } from 'express-serve-static-core';
 import { ExchangeOfferSearchParams } from '../types/exchange_offers.types';
-import { CreateExchangeOfferDto } from '../dtos/exchange_offer.dtos';
+import { CreateExchangeOfferDto, UpdateExchangeOfferDto } from '../dtos/exchange_offer.dtos';
 import { ExchangeOffer } from '../models/exchange_offer.model';
 import { exchangeOffersDb } from '../models/exchange_offer.model';
 import { isEmpty } from 'lodash';
@@ -21,6 +21,30 @@ export const getExchangeOffers = async (request: Request<{}, {}, {}, ExchangeOff
         if (error instanceof Error) {
             response.send(error);
         }
+    }
+};
+
+export const updateExchangeOffer = async (request: Request<{id: string}, {}, UpdateExchangeOfferDto>, response: Response) => {
+    const exchangeOfferId = request.params.id; // Extract ID from URL params
+    const { status } = request.body; // Extract status from request body
+
+    try {
+        // Update the status of the exchange offer
+        const result = await exchangeOffersDb()
+            .where({ id: exchangeOfferId })
+            .update({ status })
+            .returning('*'); // Use returning to get the updated row
+
+        // Check if any rows were updated
+        if (result.length === 0) {
+            return response.status(404).json({ message: 'Exchange offer not found' });
+        }
+
+        // Return the updated exchange offer
+        return response.status(200).json(result[0]);
+    } catch (error) {
+        console.error('Error updating exchange offer:', error);
+        return response.status(500).json({ message: 'An error occurred while updating the exchange offer' });
     }
 };
 
