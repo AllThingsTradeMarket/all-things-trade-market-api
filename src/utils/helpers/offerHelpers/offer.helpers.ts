@@ -60,7 +60,3 @@ export const findOfferByParams = async (params: OfferSearchParams) => {
 };
 
 const getParamsTitle = (title: string | undefined) => title ? title.toLowerCase() : '';
-
-export const generateUuid = () => {
-    return Math.random().toString() + Math.random().toString() + Math.random().toString();
-}

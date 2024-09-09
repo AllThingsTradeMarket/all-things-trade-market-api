@@ -15,3 +15,7 @@ export const asyncFor = async <T>(array: T[], asyncCallback: (item: T) => Promis
         await asyncCallback(item);
     }
 };
+
+export const generateUuid = () => {
+    return Math.random().toString() + Math.random().toString() + Math.random().toString();
+}

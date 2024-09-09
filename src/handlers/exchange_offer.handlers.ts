@@ -7,6 +7,9 @@ import { findExchangeOffersByParams, assignOfferedProductsData, assignRequestedP
 import amqp from 'amqplib/callback_api';
 import { RABBITMQ_URI } from '../utils/constants/constants';
 import { queues_names } from '../utils/constants/queues_names';
+import { generateUuid } from '../utils/helpers/helpers';
+import { io } from '..';
+import { socketEvents } from '../utils/constants/socket_events';
 
 export const createExchangeOffer = async (request: Request<{}, {}, CreateExchangeOfferDto>, response: Response) => {
     try {
@@ -24,11 +27,35 @@ export const createExchangeOffer = async (request: Request<{}, {}, CreateExchang
                 }
 
                 const queue = queues_names.EXCHANGE_OFFER_QUEUE;
+                const correlationId = generateUuid();
+                const replyQueue = 'amq.rabbitmq.reply-to';
                 const msg = JSON.stringify(exchangeOfferRequest);
-                channel.assertQueue(queue, { durable: true });
-                channel.sendToQueue(queue, Buffer.from(msg));
-                console.log('Message sent to RabbitMQ:', msg);
-                response.status(202).json({ message: 'Exchange Offer creation is being processed' });
+                channel.assertQueue('', { exclusive: true }, (err, q) => {
+                    if (err) throw err;
+
+                    channel.consume(replyQueue, (msg) => {
+                        if (msg && msg.properties.correlationId === correlationId) {
+                            const responseData = JSON.parse(msg.content.toString());
+                            console.log('Received response:', responseData);
+                            io.emit(socketEvents.NEW_EXCHANGE_OFFER, responseData);
+                            response.status(201).json(responseData);
+                            channel.close((err) => {
+                                if (err) {
+                                    console.error('Error closing channel:', err);
+                                } else {
+                                    console.log('Channel closed successfully.');
+                                }
+                            });
+                        }
+                    }, { noAck: true });
+
+                    channel.sendToQueue(queue, Buffer.from(msg), {
+                        correlationId: correlationId,
+                        replyTo: replyQueue
+                    });
+
+                    console.log('Message sent to RabbitMQ:', msg);
+                });
             });
         });
     } catch (error: unknown) {

@@ -3,13 +3,14 @@ import { Offer, offersDb } from '../models/offer.model';
 import { CreateOfferDto } from '../dtos/offer.dtos';
 import { isEmpty } from 'lodash';
 import { IMAGES_BASE_PATH } from '../utils/constants/constants';
-import { addImagesToOffers, findOfferByParams, generateUuid, getOfferWithoutFiles } from '../utils/helpers/offerHelpers/offer.helpers';
+import { addImagesToOffers, findOfferByParams, getOfferWithoutFiles } from '../utils/helpers/offerHelpers/offer.helpers';
 import { OfferSearchParams } from '../types/offers.types';
 import amqp from 'amqplib/callback_api';
 import { RABBITMQ_URI } from '../utils/constants/constants';
 import { queues_names } from '../utils/constants/queues_names';
 import { io } from '../index';
 import { socketEvents } from '../utils/constants/socket_events';
+import { generateUuid } from '../utils/helpers/helpers';
 
 export const createOffer = async (request: Request<{}, {}, CreateOfferDto>, response: Response) => {
     try {
