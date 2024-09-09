@@ -3,8 +3,8 @@ import { databaseNames } from '../utils/constants/database_names';
 import { db } from '../db/knex';
 
 export const OfferSchema = z.object({
-    id: z.string(),
-    userId: z.string(),
+    id: z.number(),
+    userId: z.number(),
     title: z.string(),
     description: z.string(),
     images: z.array(z.string()),

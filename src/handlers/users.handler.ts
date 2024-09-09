@@ -6,6 +6,10 @@ import { RABBITMQ_URI } from '../utils/constants/constants';
 import { comparePassword, findUsersByParams, getHashedPassword, mapToGetUserDto } from '../utils/helpers/userHelpers/user.helpers';
 import { UserSearchParams } from '../types/users.types';
 import { queues_names } from '../utils/constants/queues_names';
+import { generateUuid } from '../utils/helpers/helpers';
+import { io } from '..';
+import { socketEvents } from '../utils/constants/socket_events';
+import { createRequestChannel } from '../utils/helpers/create_request_channel';
 
 export const getUsers = async (request: Request<{}, {}, {}, UserSearchParams>, response: Response<GetUserDto[]>) => {
     try {
@@ -35,29 +39,8 @@ export const getUserById = async (request: Request<{ id: string }>, response: Re
 export const createUser = async (request: Request<{}, {}, CreateUserDto>, response: Response) => {
     try {
         const hashedPassword = getHashedPassword(request.body.password);
-        const userToInsert = { ...request.body, password: hashedPassword };
-        amqp.connect(RABBITMQ_URI, (err, connection) => {
-            if (err) {
-                console.error('RabbitMQ connection error', err);
-                return response.status(500).json({ error: 'RabbitMQ connection error' });
-            }
-
-            connection.createChannel((err, channel) => {
-                if (err) {
-                    console.error('RabbitMQ channel error', err);
-                    return response.status(500).json({ error: 'RabbitMQ channel error' });
-                }
-
-                const queue = queues_names.USER_QUEUE;
-                const msg = JSON.stringify(userToInsert);
-
-                channel.assertQueue(queue, { durable: true });
-                channel.sendToQueue(queue, Buffer.from(msg));
-
-                console.log('Message sent to RabbitMQ:', msg);
-                response.status(202).json({ message: 'User creation is being processed' });
-            });
-        });
+        const userToInsert: CreateUserDto = { ...request.body, password: hashedPassword };
+        createRequestChannel<CreateUserDto>(userToInsert, queues_names.USER_QUEUE, socketEvents.USER_CRATED, response);
     } catch (error: unknown) {
         if (error instanceof Error) {
             console.log(error.message);

@@ -3,10 +3,10 @@ import { imageAssignmentsDb } from "../../../models/images_assignments.model";
 import { imagesDb } from "../../../models/image.model";
 import { Offer, offersDb } from "../../../models/offer.model";
 import { formatDateToDDMMYYYY } from "../helpers";
-import { OfferSearchParams } from "../../../types/offers.types";
+import { OfferSearchParams, OfferWithoutImages } from "../../../types/offers.types";
 import { CreateOfferDto } from "../../../dtos/offer.dtos";
 
-const getOfferImagesPaths = async (offerId: string) => {
+const getOfferImagesPaths = async (offerId: number) => {
     const imageAssignments = await imageAssignmentsDb().where('offerId', offerId);
     if (isEmpty(imageAssignments)) {
         return [];
@@ -32,7 +32,7 @@ export const insertOfferToDb = async (offer: CreateOfferDto) => {
     return result[0]; // id of created offer
 };
 
-export const getOfferWithoutFiles = (offer: CreateOfferDto) => ({
+export const getOfferWithoutFiles = (offer: CreateOfferDto): OfferWithoutImages => ({
     userId: offer.userId,
     title: offer.title,
     description: offer.description,

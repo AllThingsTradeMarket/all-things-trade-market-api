@@ -4,13 +4,10 @@ import { CreateOfferDto } from '../dtos/offer.dtos';
 import { isEmpty } from 'lodash';
 import { IMAGES_BASE_PATH } from '../utils/constants/constants';
 import { addImagesToOffers, findOfferByParams, getOfferWithoutFiles } from '../utils/helpers/offerHelpers/offer.helpers';
-import { OfferSearchParams } from '../types/offers.types';
-import amqp from 'amqplib/callback_api';
-import { RABBITMQ_URI } from '../utils/constants/constants';
+import { OfferCreateRequest, OfferSearchParams } from '../types/offers.types';
 import { queues_names } from '../utils/constants/queues_names';
-import { io } from '../index';
 import { socketEvents } from '../utils/constants/socket_events';
-import { generateUuid } from '../utils/helpers/helpers';
+import { createRequestChannel } from '../utils/helpers/create_request_channel';
 
 export const createOffer = async (request: Request<{}, {}, CreateOfferDto>, response: Response) => {
     try {
@@ -21,53 +18,13 @@ export const createOffer = async (request: Request<{}, {}, CreateOfferDto>, resp
             imagePaths = uploadedFiles.map(file => `${IMAGES_BASE_PATH}/${file.filename}`);
         }
 
-        amqp.connect(RABBITMQ_URI, (err, connection) => {
-            if (err) {
-                console.error('RabbitMQ connection error', err);
-                return response.status(500).json({ error: 'RabbitMQ connection error' });
-            }
+        const requestData: OfferCreateRequest = {
+            imagePaths: imagePaths,
+            offer: offerRequest
+        }
 
-            connection.createChannel((err, channel) => {
-                if (err) {
-                    console.error('RabbitMQ channel error', err);
-                    return response.status(500).json({ error: 'RabbitMQ channel error' });
-                }
-
-                const queue = queues_names.OFFER_QUEUE;
-                const correlationId = generateUuid();
-                const replyQueue = 'amq.rabbitmq.reply-to';
-                const msg = JSON.stringify({
-                    offer: offerRequest,
-                    imagePaths: imagePaths
-                });
-                channel.assertQueue('', { exclusive: true }, (err, q) => {
-                    if (err) throw err;
-
-                    channel.consume(replyQueue, (msg) => {
-                        if (msg && msg.properties.correlationId === correlationId) {
-                            const responseData = JSON.parse(msg.content.toString());
-                            console.log('Received response:', responseData);
-                            io.emit(socketEvents.NEW_OFFER, responseData);
-                            response.status(201).json(responseData);
-                            channel.close((err) => {
-                                if (err) {
-                                    console.error('Error closing channel:', err);
-                                } else {
-                                    console.log('Channel closed successfully.');
-                                }
-                            });
-                        }
-                    }, { noAck: true });
-
-                    channel.sendToQueue(queue, Buffer.from(msg), {
-                        correlationId: correlationId,
-                        replyTo: replyQueue
-                    });
-
-                    console.log('Message sent to RabbitMQ:', msg);
-                });
-            });
-        });
+        createRequestChannel<OfferCreateRequest>(requestData, queues_names.OFFER_QUEUE, socketEvents.NEW_OFFER, response);
+        
     } catch (error: unknown) {
         if (error instanceof Error) {
             console.log(error.message);

@@ -1,5 +1,5 @@
 export type CreateOfferDto = {
-    userId: string;
+    userId: number;
     title: string;
     description: string;
     price: number;

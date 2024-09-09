@@ -4,9 +4,9 @@ import { databaseNames } from '../utils/constants/database_names';
 import { OfferSchema } from './offer.model';
 
 const ExchangeOfferSchema = z.object({
-    id: z.string(),
-    senderId: z.string(),
-    receiverId: z.string(),
+    id: z.number(),
+    senderId: z.number(),
+    receiverId: z.number(),
     date: z.string(),
     status: z.string(),
     offeredCash: z.number().optional(),

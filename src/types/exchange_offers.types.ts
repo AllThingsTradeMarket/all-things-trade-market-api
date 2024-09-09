@@ -8,3 +8,12 @@ export type ExchangeOfferSearchParams = {
     id?: string;
     status?: ExchangeOfferStatus;
 }
+
+export type ExchangeOfferUpdateResponse = {
+    status: ExchangeOfferStatus;
+}
+
+export type ExchangeOfferUpdateRequest = {
+    status: ExchangeOfferStatus;
+    id: number;
+}

@@ -3,7 +3,7 @@ import { db } from '../db/knex';
 import { databaseNames } from '../utils/constants/database_names';
 
 const ImageAsignmentSchema = z.object({
-    id: z.string(),
+    id: z.number(),
     imageId: z.number(),
     offerId: z.number()
 });
